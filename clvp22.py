@@ -1,13 +1,24 @@
 import sys
 import re
+from datetime import datetime
 
+
+def write_error(error):
+    print(error)
+    f = open('parser.log', 'a')
+    f.write('Execution at '+str(datetime.now()) +':\n')
+    f.write('error occured - '+error+'\n')
+    f.write('\n')
+    f.close()
+    sys.exit()
+    
 def read_input_file(F, V, C, P, E, L, Q, file_name):
     reg_expr = re.compile('[a-zA-Z0-9_]')
     FILE = None
     try:
         FILE = open(file_name)
     except:
-        print('could not open the specified input file')
+        print('could not open the specified input file ...')
         sys.exit()
     for line in FILE:
         lst = line.rstrip().split(' ')
@@ -15,105 +26,98 @@ def read_input_file(F, V, C, P, E, L, Q, file_name):
             V = lst[1:]
             for v in V:
                 if not bool(re.match(reg_expr, v)):
-                    print('variable name contains illegal characters')
-                    sys.exit()
+                    write_error('variable name contains illegal characters ...')
         elif lst[0] == 'constants:':
             C = lst[1:]
             for c in C:
                 if not bool(re.match(reg_expr, c)):
-                    print('constant name contains illegal characters')
-                    sys.exit()
+                    write_error('constant name contains illegal characters ...')
         elif lst[0] == 'predicates:':
             for i in range(1, len(lst)):
                 try:
                     P.append((lst[i][:-3], int(lst[i][lst[i].index('[')+1:lst[i].index(']')])))
                 except:
-                    print('error in input file - predicate given a non integer arity')
-                    sys.exit()
+                    write_error('error in input file - predicate given a non integer arity ..')
                     
             for p in P:
                 if not bool(re.match(reg_expr, p[0])):
-                    print('predicate name contains illegal characters')
-                    sys.exit()
+                    write_error('predicate name contains illegal characters ..')
         elif lst[0] == 'equality:':
             try:
                 E = lst[1]
             except:
-                print('no equality symbol given')
-                sys.exit()
+                write_error('no equality symbol given ...')
         elif lst[0] == 'connectives:':
             try:
                 L = lst[1:6]
             except:
-                print('some connectives misisng in the input file')
-                sys.exit()
+                write_error('some connectives missing in the input file ..')
         elif lst[0] == 'quantifiers:':
             try:
                 Q = lst[1:3]
             except:
-                print('some quantifiers missing in the input file')
-                sys.exit()
+                write_error('some quantifiers missing in the input file ...')
         elif lst[0] == 'formula:':
             F = ''.join(lst[1:])
         elif F:
             F += ''.join(lst)
 
-    if E == []:
-        print('no equality symbol given')
-        sys.exit()
+    if not E:
+        write_error('no equality symbol given ...')
 
-    if L == []:
-        print('some connectives misisng in the input file')
-        sys.exit()
+    if len(L) != 5:
+        write_error('incorrect number of connectives in the input file ...')
 
-    if Q == []:
-        print('some quantifiers missing in the input file')
-        sys.exit()
+    if len(Q) != 2:
+        write_error('incorrect number of quantifiers in the input file ...')
 
     if set(V).intersection(set(C)):
-        print('some variables and constants given the same name')
-        sys.exit()
+        write_error('some variables and constants given the same name ...')
 
     if set(V).intersection(set(L)):
-        print('some variables and connectives given the same name')
-        sys.exit()
+        write_error('some variables and connectives given the same name ...')
 
     if set(C).intersection(set(L)):
-        print('some constants and connectives given the same name')
-        sys.exit()
+        write_error('some constants and connectives given the same name ...')
 
     if set(V).intersection(set(Q)):
-        print('some variables and quantifiers given the same name')
-        sys.exit()
+        write_error('some variables and quantifiers given the same name ...')
 
     if set(C).intersection(set(Q)):
-        print('some constants and quantifiers given the same name')
-        sys.exit()
+        write_error('some constants and quantifiers given the same name ...')
 
     if set(L).intersection(set(Q)):
-        print('some connectives and quantifiers given the same name')
-        sys.exit()
+        write_error('some connectives and quantifiers given the same name ...')
+
+    if len(set(C)) != len(C):
+        write_error('duplicated constant names in the input file ... ')
+
+    if len(set(V)) != len(V):
+        write_error('duplicated variable names in the input file ... ')
+
+    if len(set([p[0] for p in P])) != len([p[0] for p in P]):
+        write_error('duplicated predicate names in the input file ... ')
+
+    if len(set(L)) != len(L):
+        write_error('duplicated connective names in the input file ... ')
+
+    if len(set(Q)) != len(L):
+        write_error('duplicated quantifier names in the input file ... ')
 
     if E in V or E in C or E in Q or E in L:
-        print('equality symbol given the same name somewhere else')
-        sys.exit()
+        write_error('equality symbol given the same name somewhere else ...')
         
     for p in P:
         if p[0] in V:
-            print('some variables and predicates given the same name')
-            sys.exit()
+            write_error('some variables and predicates given the same name ...')
         if p[0] in C:
-            print('some constants and predicates given the same name')
-            sys.exit()
+            write_error('some constants and predicates given the same name ...')
         if p[0] in L:
-            print('some connectives and predicates given the same name')
-            sys.exit()
+            write_error('some connectives and predicates given the same name ...')
         if p[0] in Q:
-            print('some quantifiers and predicates given the same name')
-            sys.exit()
+            write_error('some quantifiers and predicates given the same name ...')
         if p[0] == E:
-            print('equality symbol and predicate given the same name')
-            sys.exit()
+            write_error('equality symbol and predicate given the same name ...')
     FILE.close()
     return F, V, C, P, L, Q, E
     
@@ -129,18 +133,19 @@ def print_grammar(V, C, P, E, L, Q):
     exists = Q[0]
     forall = Q[1]
 
-    print('S -> Form')
+    print('S -> Formula')
 
     # logical formulae rules
-    print('Form -> (Form'+land+'Form) | (Form'+lor+'Form) | (Form'+implies+'Form) | (Form'+iff+'Form) | '+neg+'Form | QuanVarForm | Expr | Pred')
+    print('Formula -> (Expression) | '+neg+'Formula | QuantifierVariableFormula | Predicate')
 
     # quantify formulae rule
-    print('Quan -> '+ exists + ' | '+ forall)
+    print('Quantifier -> '+ exists + ' | '+ forall)
 
     # equality atoms rule
-    print('Expr -> (Term'+eq+'Term)')
-    print('Term -> Const | Var')
+    print('Expression -> Term'+eq+'Term | FormulaConnectiveFormula')
+    print('Term -> Constant | Variable')
 
+    print('Connective -> '+land+' | '+lor+' | '+implies+' | '+iff)
     # assign variables to predicate rule
     predicates = ''
     for p in P:
@@ -149,7 +154,7 @@ def print_grammar(V, C, P, E, L, Q):
         predicates += ') | '
         
     predicates = predicates[:-3]
-    print('Pred -> '+predicates)
+    print('Predicate -> '+predicates)
 
     # assign variable rule
     variables = ''
@@ -157,7 +162,7 @@ def print_grammar(V, C, P, E, L, Q):
         variables += v + ' | '
 
     variables = variables[:-3]
-    print('Var -> '+ variables)
+    print('Variable -> '+ variables)
 
     # assign constants rule
     constants = ''
@@ -165,7 +170,7 @@ def print_grammar(V, C, P, E, L, Q):
         constants += c + ' | '
 
     constants = constants[:-3]
-    print('Const -> '+ constants)
+    print('Constant -> '+ constants)
 
 def lexical_analyzer(F, V, C, P, E, L, Q):
     max_length = 0 # maximum length of a valid lexeme
@@ -199,16 +204,15 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
         while j > 0:
             lexeme = F[i:i+j]
             if lexeme == '(':
-                token_array.append((lexeme, 'OpenBr'))
+                token_array.append((lexeme, 'OpenBracket'))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
                 continue
             if lexeme == ')':
                 if arity > 0:
-                    print('Predicate given too few variables')
-                    sys.exit()
-                token_array.append((lexeme, 'CloseBr'))
+                    write_error('Predicate given too few variables ...')
+                token_array.append((lexeme, 'CloseBracket'))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
@@ -217,20 +221,19 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 if arity > 0:
                     arity -= 1
                 else:
-                    print('Unexpected character ","  - Predicate could have been given too many variables')
-                    sys.exit()
+                    write_error('Unexpected character ","  - Predicate could have been given too many variables ...')
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
                 continue
             if lexeme in V:
-                token_array.append((lexeme, 'Var'))
+                token_array.append((lexeme, 'Variable'))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
                 continue
             if lexeme in C:
-                token_array.append((lexeme, 'Const'))
+                token_array.append((lexeme, 'Constant'))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
@@ -238,34 +241,36 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
             # checking for Predicates
             for p in P:
                 if p[0] == lexeme:
-                    token_array.append((lexeme, 'Pred', p[1]))
+                    token_array.append((lexeme, 'Predicate', p[1]))
                     i += len(lexeme)
                     j = max_length
                     lexeme = ''
                     arity = p[1] - 1
                     break
             if lexeme == E:
-                token_array.append((lexeme, 'Equal'))
+                token_array.append((lexeme, 'Equality'))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
                 continue
             if lexeme in L:
-                token_array.append((lexeme, 'Log', L.index(lexeme)))
+                if lexeme == L[4]:
+                    token_array.append((lexeme, 'Negation', L.index(lexeme)))
+                else:
+                    token_array.append((lexeme, 'Connective', L.index(lexeme)))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
                 continue
             if lexeme in Q:
-                token_array.append((lexeme, 'Quan', Q.index(lexeme)))
+                token_array.append((lexeme, 'Quantifier', Q.index(lexeme)))
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
                 continue
             j -= 1
         if i < len(F):
-            print('Unexpected character "' + F[i]+ '" at ' + str(i))
-            sys.exit()
+            write_error('Unexpected character "' + F[i]+ '" at ' + str(i)+'  ...')
         
     return token_array
 
@@ -295,138 +300,111 @@ if F == '':
     sys.exit()
     
 token_array = lexical_analyzer(F, V, C, P, E, L, Q)
-print()
-print(token_array)
 
 # syntax analyzer
 
-i = 0
-j = 0
+token_array += [('EOF', 'EOF')]
 
-prod_rules = ['S', 'Form']
-next_prod = 'Form'
+I = 0
+lookahead = token_array[I]
+arity = 0
 
-def recursive_parsing(prod_rules, token_array, i):
+def Formula():
+    global lookahead
+    if lookahead[0] == '(':
+        match('OpenBracket')
+        Expression()
+        match('CloseBracket')
+    elif lookahead[0] == L[4]: # equal to negation
+        match('Negation')
+        Formula()
+    elif lookahead[0] in Q:
+        Quantifier()
+        Variable()
+        Formula()
+    elif [p for p in P if p[0] == lookahead [0]]:
+        Predicate()
+    elif lookahead[0] == 'EOF':
+        return
+    else:
+        write_error('syntax error ... could not match '+lookahead[0] +' in Formula')
+            
+def Expression():
+    global lookahead
+    if lookahead[0] in C or lookahead[0] in V:
+        Term()
+        match('Equality')
+        Term()
+    else:
+        Formula()
+        Connective()
+        Formula()
 
-    curr_prod = prod_rules[-1]
-    n_term = ''
-    for i in range(0, len(curr_prod)):
-        if 'Form' in curr_prod[:i]:
-            n_term = 'Form'
-            break
-        if 'Quan' in curr_prod[:i]:
-            n_term = 'Quan'
-            break
-        if 'Expr' in curr_prod[:i]:
-            n_term = 'Expr'
-            break
-        if 'Pred' in curr_prod[:i]:
-            n_term = 'Pred'
-            break
-        if 'Var' in curr_prod[:i]:
-            n_term = 'Var'
-            break
-        if 'Term' in curr_prod[:i]:
-            n_term = 'Term'
-            break
-        if 'Const' in curr_prod[:i]:
-            n_term = 'Const'
-            break
-        
-    if n_term == '':
-        return prod_rules
+def Term():
+    global lookahead
+    if lookahead[0] in C:
+        Constant()
+    elif lookahead[0] in V:
+        Variable()
+    else:
+        write_error('syntax error ... could not match '+lookahead[0] +' in Term')
+
+def Predicate():
+    global arity
+    match('Predicate')
+    match('OpenBracket')
+    for _ in range(arity):
+        Variable()
+    match('CloseBracket')
     
-    token = token_array[i][0]
-    token_type = token_array[i][1]
+def Quantifier():
+    match('Quantifier')
 
-    if n_term == 'Form':
-        return recursive_parsing(prod_rules+[curr_prod.replace('Form', 'Var', 1)], token_array, i+1)
+def Connective():
+    match('Connective')
+
+def Variable():
+    match('Variable')
+
+def Constant():
+    match('Constant')
+
+def match(token_type):
+    global lookahead
+    global arity
+    if (lookahead[1] == token_type):
+        if token_type == 'Predicate':
+            try:
+                arity = lookahead[2]
+            except:
+                write_error('internal parser error ... could not get arity of predicate '+lookahead[0])
+        next_token()
+    else:
+        write_error('syntax error ... could not match '+lookahead[0] +' to '+token_type)
         
-
-        
-
-'''while i < len(token_array):
-    curr_prod = prod_rules[-1]
-    print(curr_prod)
+def next_token():
+    global lookahead
+    global I
+    try:
+        I += 1
+        lookahead = token_array[I]
+    except:
+        write_error('syntax error ... parser expected additional tokens ... ')
     
-    token = token_array[i][0]
-    token_type = token_array[i][1]
+Formula()
+# construct and print the parse tree as we go along ...
+
+if lookahead[0] != 'EOF':
+    write_error('syntax error ... parser given additional tokens ... ')
+else:
+    print('Formula is syntactically correct ... ')
+    f = open('parser.log', 'a')
+    f.write('Execution at '+str(datetime.now()) +':\n')
+    f.write('The formula was syntactically correct\n')
+    f.write('\n')
+    f.close()
+    # save the valid parse tree
+    sys.exit()
+
+
     
-    if token_type == 'Var':
-        if 'Var' == next_prod:
-            prod_rules.append(curr_prod.replace('Var', token, 1))
-            i += 1
-            continue
-        elif 'Form' == next_prod:
-            prod_rules.append(curr_prod.replace('Form', 'Var', 1))
-            curr_prod = prod_rules[-1]
-            prod_rules.append(curr_prod.replace('Var', token, 1))
-            i += 1
-            continue
-        else:
-            print('parsing error at token number '+ str(i))
-            break
-    if token_type == 'Const':
-        if 'Const' == next_prod:
-            prod_rules.append(curr_prod.replace('Const', token, 1))
-            i += 1
-            continue
-        elif 'Form' == next_prod:
-            prod_rules.append(curr_prod.replace('Form', 'Const', 1))
-            curr_prod = prod_rules[-1]
-            prod_rules.append(curr_prod.replace('Const', token, 1))
-            i += 1
-            continue
-        else:
-            print('parsing error at token number '+ str(i))
-            break
-    if token_type == 'Pred':
-        var = '(' + 'Var,'*(token_array[i][2]-1)+'Var' +')'
-        if 'Pred' == next_prod:
-            prod_rules.append(curr_prod.replace('Pred', token+var, 1))
-            i += 1
-            continue
-        elif 'Form' == next_prod:
-            prod_rules.append(curr_prod.replace('Form', 'Pred', 1))
-            curr_prod = prod_rules[-1]
-            prod_rules.append(curr_prod.replace('Pred', token+var, 1))
-            i += 1
-            continue
-        else:
-            print('parsing error at '+ str(i))
-            break
-    if token_type == 'Log':
-        print('parsing error at token number '+ str(i))
-        break
-    if token_type == 'Quan':
-        if 'Form' == next_prod:
-            prod_rules.append(curr_prod.replace('Form', 'QuanVarForm', 1))
-            curr_prod = prod_rules[-1]
-            prod_rules.append(curr_prod.replace('Quan', token, 1))
-            i += 1
-            next_prod = 'Var'
-            continue
-        else:
-            print('parsing error at '+ str(i))
-            break
-    if token_type == 'OpenBr':
-        if 'OpenBr' == next_prod:
-            i += 1
-            continue
-        if 'Form' == next_prod:
-            break
-        else:  
-            print('parsing error at token number '+ str(i))
-            break
-    if token_type == 'CloseBr':
-        if 'OpenBr' == next_prod:
-            i += 1
-            continue
-        if 'Form' == next_prod:
-            break
-        else:
-            print('parsing error at token number '+ str(i))
-            break'''
-
-print(prod_rules)
-
