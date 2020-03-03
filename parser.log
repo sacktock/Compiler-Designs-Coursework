@@ -5,3 +5,395 @@ The formula was syntactically correct
 Execution at 2020-03-02 17:33:10.648093:
 error occured - duplicated predicate names in the input file ... 
 
+Execution at 2020-03-02 20:44:55.312955:
+error occured - duplicated quantifier names in the input file ... 
+
+Execution at 2020-03-02 20:45:11.442618:
+error occured - duplicated quantifier names in the input file ... 
+
+Execution at 2020-03-02 20:45:29.183787:
+error occured - duplicated quantifier names in the input file ... 
+
+Execution at 2020-03-02 20:45:43.312641:
+The formula was syntactically correct
+
+Execution at 2020-03-02 20:49:42.957661:
+error occured - no equality symbol given ...
+
+Execution at 2020-03-02 20:49:53.163384:
+error occured - Unexpected character "=" at 57  ...
+
+Execution at 2020-03-02 20:50:11.888118:
+The formula was syntactically correct
+
+Execution at 2020-03-02 20:50:22.454895:
+error occured - some variables and constants given the same name ...
+
+Execution at 2020-03-02 20:50:34.948984:
+error occured - some variables and constants given the same name ...
+
+Execution at 2020-03-02 20:56:06.446521:
+The formula was syntactically correct
+
+Execution at 2020-03-02 20:56:17.879872:
+The formula was syntactically correct
+
+Execution at 2020-03-02 21:02:27.938914:
+error occured - unexcpected line in the input file ... \lor \exists z ( ( (C = z) \land Q(z) ) \land P(x,z) ) )
+ ...
+
+Execution at 2020-03-02 21:02:44.248947:
+error occured - unexcpected line in the input file ... 
+ ...
+
+Execution at 2020-03-02 21:02:57.015067:
+The formula was syntactically correct
+
+Execution at 2020-03-02 21:03:09.498787:
+The formula was syntactically correct
+
+Execution at 2020-03-02 21:03:16.917720:
+error occured - unexcpected line in the input file ... jdjdjd ...
+
+Execution at 2020-03-02 21:12:31.774127:
+The formula was syntactically correct
+
+Execution at 2020-03-02 21:18:47.000702:
+error occured - Unexpected character "(" at 19  ...
+
+Execution at 2020-03-02 21:20:33.827161:
+error occured - Unexpected character "(" at 19  ...
+
+Execution at 2020-03-02 21:21:33.882284:
+The formula was syntactically correct
+
+Execution at 2020-03-02 21:22:13.086695:
+error occured - Unexpected character "P" at 18  ...
+
+Execution at 2020-03-02 21:22:26.428010:
+error occured - Unexpected character "P" at 18  ...
+
+Execution at 2020-03-02 21:23:47.485662:
+error occured - Unexpected character "P" at 18  ...
+
+Execution at 2020-03-02 21:25:20.222599:
+error occured - Unexpected character "(" at 19  ...
+
+Execution at 2020-03-02 21:26:21.871199:
+error occured - Unexpected character ","  - Predicate could have been given too many variables ...
+
+Execution at 2020-03-02 21:28:52.366038:
+error occured - Unexpected character ","  - Predicate could have been given too many variables ...
+
+Execution at 2020-03-02 21:29:23.746410:
+error occured - Unexpected character ","  - Predicate could have been given too many variables ...
+
+Execution at 2020-03-02 21:31:07.910553:
+The formula was syntactically correct
+
+Execution at 2020-03-02 21:39:03.378523:
+The formula was syntactically correct
+
+Execution at 2020-03-03 11:35:19.493354:
+error occured - syntax error ... parser expected additional tokens ... 
+
+Execution at 2020-03-03 11:36:32.397982:
+error occured - syntax error ... parser given additional tokens ... 
+
+Execution at 2020-03-03 11:37:06.864040:
+error occured - syntax error ... parser expected additional tokens ... 
+
+Execution at 2020-03-03 11:37:20.227060:
+error occured - syntax error ... parser given additional tokens ... 
+
+Execution at 2020-03-03 11:37:40.894540:
+error occured - syntax error ... parser expected additional tokens ... 
+
+Execution at 2020-03-03 11:45:02.164933:
+error occured - syntax error ... parser expected additional tokens ... 
+
+Execution at 2020-03-03 11:45:21.518018:
+error occured - syntax error ... parser expected additional tokens ... 
+
+Execution at 2020-03-03 11:46:06.623019:
+error occured - syntax error ... parser given additional tokens ... 
+
+Execution at 2020-03-03 11:46:29.503171:
+The formula was syntactically correct
+
+Execution at 2020-03-03 11:48:09.657208:
+error occured - syntax error ... could not match ) to EOF
+
+Execution at 2020-03-03 11:48:18.959111:
+error occured - syntax error ... could not match $ to CloseBracket
+
+Execution at 2020-03-03 15:01:07.776476:
+The formula was syntactically correct
+
+Execution at 2020-03-03 15:25:39.016876:
+The formula was syntactically correct
+
+Execution at 2020-03-03 15:26:10.010198:
+The formula was syntactically correct
+
+Execution at 2020-03-03 15:58:05.904762:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:00:17.964625:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:01:39.720109:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:04:40.520256:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:05:09.844204:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:05:53.178822:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:07:06.050309:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:07:35.247345:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:09:27.457902:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:10:45.590872:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:15:22.596247:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:15:39.758780:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:17:07.695375:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:22:10.429062:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:23:29.462326:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:24:11.922999:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:27:48.423022:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:28:11.825864:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:28:34.573592:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:32:49.236317:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:36:07.860019:
+The formula was syntactically correct
+
+Execution at 2020-03-03 16:48:19.291088:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:00:55.286605:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:07:51.900423:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:08:26.045149:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:09:15.634046:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:09:24.445076:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:11:12.183078:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:19:07.144161:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:24:59.226712:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:25:18.283656:
+The formula was syntactically correct
+
+Execution at 2020-03-03 17:25:25.950413:
+The formula was syntactically correct
+
+Execution at 2020-03-03 20:32:16.460501:
+The formula was syntactically correct
+
+Execution at 2020-03-03 20:55:42.965542:
+The formula was syntactically correct
+
+Execution at 2020-03-03 20:58:42.439028:
+The formula was syntactically correct
+
+Execution at 2020-03-03 20:59:45.578350:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:00:43.042878:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:01:49.512450:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:04:42.354288:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:15:38.570407:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:20:42.153304:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:21:18.964415:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:21:56.090031:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:34:56.292230:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:35:05.311713:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:35:44.137681:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:53:57.092981:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:55:26.660328:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:55:52.067067:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:56:16.713486:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:59:14.521487:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:59:33.275124:
+The formula was syntactically correct
+
+Execution at 2020-03-03 21:59:47.956918:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:00:18.182878:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:00:48.802322:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:01:33.844419:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:02:46.577515:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:06:16.269965:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:11:59.701188:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:15:09.380524:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:15:19.089226:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:17:24.863900:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:17:47.400095:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:19:41.609237:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:25:43.310113:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:27:09.602863:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:27:35.650129:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:27:46.433350:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:31:08.579503:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:34:52.252938:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:35:03.044546:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:37:01.604801:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:37:46.060350:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:38:15.289761:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:38:35.539963:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:39:48.720077:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:41:17.743167:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:43:50.890883:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:46:36.184441:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:46:52.505385:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:47:06.181309:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:47:32.682146:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:47:46.965671:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:48:18.256543:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:48:40.588450:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:48:55.198496:
+The formula was syntactically correct
+
+Execution at 2020-03-03 22:49:09.986762:
+The formula was syntactically correct
+
