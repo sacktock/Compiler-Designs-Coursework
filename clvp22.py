@@ -5,8 +5,22 @@ import igraph
 from igraph import Graph, EdgeSeq
 import plotly.graph_objects as go
 import math
+#################################################################
+# Python script information
+#################################################################
+
+# -> This python script is written with python version 3.6.3
+# -> This python script requires the modules, sys, re, datetime, igraph, plotly, and math
+# -> to install igraph and plotly use the following commands:
 # pip install python-igraph
 # pip install plotly
+# note: the parse tree will be displayed in your default browser ...
+#       make sure python can open your default brower / has permission to do so ...
+#       if possible you can open your defualt browser in anticipation, to make the parse tree display quicker.
+
+#################################################################
+# Function definitions
+#################################################################
 
 def write_error(error): # print error and write to the log file
     print()
@@ -309,6 +323,10 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
         
     return token_array
 
+#################################################################
+# Main code
+#################################################################
+
 # read in variables to V
 # read in constants to C
 # read in predicates to P
@@ -333,27 +351,40 @@ else:
     print('No filename specified in the command line ... using the default filename "example.txt"')
     print()
 
-
+# try to read input file
 F, V, C, P, L, Q, E = read_input_file(F, V, C, P, E, L, Q, file_name)
 
+# print the grammar
 print_grammar(V, C, P, E, L, Q)
 
-# lexical analysis
+#################################################################
+# Lexical analysis
+#################################################################
 
+# if we dont' have a formula print error and exit
 if F == '':
-    print('no formula given')
-    sys.exit()
-    
+    write_error('no formula given ...')
+
+# get the token stream from our lexical analyzer 
 token_array = lexical_analyzer(F, V, C, P, E, L, Q)
 
-# syntax analysis
+#################################################################
+# Syntax analysis
+#################################################################
 
-class Tree(object): # parse tree data structure
+#################################################################
+# Parse tree data structure
+#################################################################
+class Tree(object):
     def __init__(self, data, index):
         self.data = data # data represents the token
         self.index = index # index represents the index of the token in the token array / stream
         self.children = [] # list of child nodes
 
+#################################################################
+# Non terminal function definitions
+#################################################################
+    
 def Start(parent):
     global I
     global lookahead
@@ -477,12 +508,16 @@ def next_token(): # function that sets the global lookahead variable to the next
             # if we get an index out of range error then we must report an error, our parser was expecting more tokens but it reached EOF
             write_error('syntax error ... parser expected additional tokens ... ')
 
+#################################################################
+# Main code
+#################################################################
 
 token_array += [('$', 'EOF')] # append EOF / $ to the end of our token stream 
 
-I = 0 # the current character
-lookahead = token_array[I] # set the lookahead to the first character
-arity = 0 # global arity var for any predictes we come accross
+# init the global variabes for syntax analysis
+I = 1 # set I to 1 the first character
+lookahead = token_array[I-1] # set the lookahead to the first character at position I - 1
+arity = 0 # global arity variable for any predictes we come accross
 
 # initialise the parse tree data structure
 root = Tree('Start', 0)
@@ -490,7 +525,9 @@ root = Tree('Start', 0)
 # call the Start() function on the root node and begin parsing
 Start(root)
 
-# constructing and displaying the tree
+#################################################################
+# Constructing and displaying the parse tree
+#################################################################
 
 # set the global variable current_node to our root 'Start' node
 current_node = root
@@ -498,6 +535,10 @@ current_node = root
 lay = [0]*len(token_array)
 # init the Edges array which specifies the edges between the parse tree nodes
 Edges = []
+
+#################################################################
+# Function definitions
+#################################################################
 
 def traverse_tree(node, X, Y, H): # traverse tree function
     global position
@@ -508,7 +549,7 @@ def traverse_tree(node, X, Y, H): # traverse tree function
         Edges.append((node.index, node.children[i].index)) # create an edge between this node and its children
         traverse_tree(node.children[i], X + (i+1-((L+1)/2))*(1/H), Y+2.0, H*1.50) # call traverse_tree on each of the child nodes and specify their relative position
 
-def create_tree(lay, E): # create tree function - create the tree using the layout array lay and the edges array E
+def display_tree(lay, E): # display tree function - display the tree with plotly and igraph using the layout array lay and the edges array E
     global token_array
     nr_vertices = len(token_array) # set nr_vertices to the number of vertices
     v_label = ['Start']+[t[0] for t in token_array][:-1] # append Start to our node labels and remove the EOF character from our labels
@@ -581,6 +622,9 @@ def make_annotations(pos, text, labels, M, position, font_size=10, font_color='r
         )
     return annotations
 
+#################################################################
+# Main code
+#################################################################
 
 if lookahead[1] != 'EOF': # if we have not reached EOF then we have a syntax error ... we have been given too many tokens .. perhaps additional brackets
     write_error('syntax error ... parser given additional tokens ... ')
@@ -594,7 +638,7 @@ else:
     f.close()
     print('Displaying parse tree ... ')
     traverse_tree(root, 0.0, -10.0, 0.25) # traverse the tree starting from the root
-    create_tree(lay, Edges) # display the tree
+    display_tree(lay, Edges) # display the tree
     sys.exit()
 
 
