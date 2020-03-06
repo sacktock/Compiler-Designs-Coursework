@@ -9,6 +9,7 @@ import math
 # pip install plotly
 
 def write_error(error): # print error and write to the log file
+    print()
     print(error)
     f = open('parser.log', 'a')
     f.write('Execution at '+str(datetime.now()) +':\n')
@@ -18,68 +19,76 @@ def write_error(error): # print error and write to the log file
     sys.exit()
     
 def read_input_file(F, V, C, P, E, L, Q, file_name): # read the input file
-    reg_expr = re.compile('[a-zA-Z0-9_]') # regular expression for checking variable, predicate and constants
+    name_re = re.compile('[a-zA-Z0-9_]') # regular expression for checking variable, predicate and constants
+    other_re = re.compile('[a-zA-Z0-9_\\\\]') # regular expression for conenctives and quantifiers
+    equality_re = re.compile('[a-zA-A0-9_\\\\=]') # regular expression for the equality symbol
     FILE = None
     formula_flag = False # flag indictating if we are expecting part of the formula no the next line
     try:
         FILE = open(file_name)
     except:
-        print('could not open the specified input file ...')
+        print('could not open the specified input file ...') # throw error and exit if the file doesn't exist
         sys.exit()
-    for line in FILE:
+    for line in FILE: 
         lst = line.rstrip().split(' ')
         if lst[0] == 'variables:':
             V = lst[1:]
             for v in V:
-                if not bool(re.match(reg_expr, v)):
+                if not bool(re.match(name_re, v)): # check variable names against regular expression
                     write_error('variable name contains illegal characters ...')
-            formula_flag = False
         elif lst[0] == 'constants:':
             C = lst[1:]
             for c in C:
-                if not bool(re.match(reg_expr, c)):
+                if not bool(re.match(name_re, c)): # check constant names against regular expression
                     write_error('constant name contains illegal characters ...')
-            formula_flag = False
         elif lst[0] == 'predicates:':
             for i in range(1, len(lst)):
-                try:
+                try: # append tuple (<predicate_name>, <arity>) to P
                     P.append((lst[i][:-3], int(lst[i][lst[i].index('[')+1:lst[i].index(']')])))
                 except:
                     write_error('error in input file - predicate given a non integer arity ...')
                     
             for p in P:
-                if not bool(re.match(reg_expr, p[0])):
+                if not bool(re.match(name_re, p[0])): # check predicate names against regular expression
                     write_error('predicate name contains illegal characters ..')
-            formula_flag = False
         elif lst[0] == 'equality:':
             try:
                 E = lst[1]
-            except:
+                if not bool(re.match(equality_re, E)): # check equality symbol against regular expression
+                    write_error('equality symbol name contains illegal characters ...')
+            except: # check equality symbol given
                 write_error('no equality symbol given ...')
-            formula_flag = False
         elif lst[0] == 'connectives:':
             try:
                 L = lst[1:6]
-            except:
+                for l in L:
+                    if not bool(re.match(other_re, l)): # check connectives against regular expression
+                        write_error('connective contains illegal characters ...')
+            except: # check all logical connectives are given
                 write_error('some connectives missing in the input file ..')
-            formula_flag = False
         elif lst[0] == 'quantifiers:':
             try:
                 Q = lst[1:3]
-            except:
+                for q in Q:
+                    if not bool(re.match(other_re, q)): # check quantifiers against regular expression
+                        write_error('quantifier contains illegal characters ...')
+            except: # check all quantifiers are given
                 write_error('some quantifiers missing in the input file ...')
-            formula_flag = False
         elif lst[0] == 'formula:':
             F = ''.join(lst[1:])
             formula_flag = True
+            continue
         elif formula_flag:
             F += ''.join(lst)
-        else:
+            continue
+        else: # if no formula flag throw error - we are not expecting this line ...
             write_error('unexcpected line in the input file ... '+line+' ...')
+            
+        formula_flag = False
             
     FILE.close()
     
-    # Handle various errors
+    # Handle various input file errors
     if not E:
         write_error('no equality symbol given ...')
 
@@ -150,33 +159,35 @@ def print_grammar(V, C, P, E, L, Q):
     exists = Q[0]
     forall = Q[1]
 
+    print('note: all non-terminals are enclosed by * characters like so: *<non-terminal>* ')
+    print()
     # start rule
-    print('Start -> Formula')
+    print('*Start* -> *Formula*')
 
     # logical formulae rules
-    print('Formula -> (Expression) | '+neg+'Formula | QuantifierVariableFormula | Predicate')
+    print('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier* *Variable* *Formula* | *Predicate*')
 
     # quantifiers
-    print('Quantifier -> '+ exists + ' | '+ forall)
+    print('*Quantifier* -> '+ exists + ' | '+ forall)
 
     # expression rules
-    print('Expression -> Term'+eq+'Term | FormulaConnectiveFormula')
+    print('*Expression* -> *Term*'+eq+'*Term* | *Formula**Connective**Formula*')
     
     # term rules
-    print('Term -> Constant | Variable')
+    print('*Term* -> *Constant* | *Variable*')
 
     # connectives rule
-    print('Connective -> '+land+' | '+lor+' | '+implies+' | '+iff)
+    print('*Connective* -> '+land+' | '+lor+' | '+implies+' | '+iff)
     
     # assign variables to predicate rule
     predicates = ''
     for p in P:
-        predicates += p[0] + '(' + 'Variable, '*p[1]
+        predicates += p[0] + '(' + '*Variable*, '*p[1]
         predicates = predicates[:-2]
         predicates += ') | '
         
     predicates = predicates[:-3]
-    print('Predicate -> '+predicates)
+    print('*Predicate* -> '+predicates)
 
     # assign variable rule
     variables = ''
@@ -184,7 +195,7 @@ def print_grammar(V, C, P, E, L, Q):
         variables += v + ' | '
 
     variables = variables[:-3]
-    print('Variable -> '+ variables)
+    print('*Variable* -> '+ variables)
 
     # assign constants rule
     constants = ''
@@ -192,7 +203,7 @@ def print_grammar(V, C, P, E, L, Q):
         constants += c + ' | '
 
     constants = constants[:-3]
-    print('Constant -> '+ constants)
+    print('*Constant* -> '+ constants)
 
 def lexical_analyzer(F, V, C, P, E, L, Q):
     max_length = 0 # maximum length of a valid lexeme
@@ -216,22 +227,21 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
             max_length = len(q)
     #####################################################
             
-    lex_pointer = 0
-    lexeme = ''
+    lexeme = '' # init lexeme variable
     token_array = [] # construct the token_array
-    arity = 0
+    arity = 0 # init arity variable
 
-    i = 0
-    j = max_length
+    i = 0 # set our pointer i to the start
+    j = max_length # set the lookahead pointer to max length
 
     while i < len(F): # while we still have characters to evaluate
         while j > 0: # while we still have a string to evaluate
             lexeme = F[i:i+j] # set lexeme
             # evaluate lexeme
             if lexeme == '(':
-                token_array.append((lexeme, 'OpenBracket'))
-                i += len(lexeme)
-                j = max_length
+                token_array.append((lexeme, 'OpenBracket')) # append tuple (<lexeme>, <token_type>) to our token array
+                i += len(lexeme) # move the pointer along the input
+                j = max_length # set the lookahead pointer to max length again
                 lexeme = ''
                 continue
             if lexeme == ')':
@@ -243,7 +253,7 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 lexeme = ''
                 continue
             if lexeme == ',':
-                if arity > 0:
+                if arity > 0: # if we see a comma make sure it is part of a predicate
                     arity -= 1
                 else:
                     write_error('Unexpected character ","  - Predicate could have been given too many variables ...')
@@ -266,11 +276,11 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
             # checking for Predicates
             for p in P:
                 if p[0] == lexeme:
-                    token_array.append((lexeme, 'Predicate', p[1]))
+                    token_array.append((lexeme, 'Predicate', p[1])) # append the tuple (<lexeme>, <token_type>, <arity>) to our token array
                     i += len(lexeme)
                     j = max_length
                     lexeme = ''
-                    arity = p[1] - 1
+                    arity = p[1] - 1 # set the arity variable to <arity> - 1, this is how many commas (,) we expect
                     break
             if lexeme == E:
                 token_array.append((lexeme, 'Equality'))
@@ -280,7 +290,7 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 continue
             if lexeme in L:
                 if lexeme == L[4]:
-                    token_array.append((lexeme, 'Negation', L.index(lexeme)))
+                    token_array.append((lexeme, 'Negation', L.index(lexeme))) # specify the special negation case
                 else:
                     token_array.append((lexeme, 'Connective', L.index(lexeme)))
                 i += len(lexeme)
@@ -293,8 +303,8 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 j = max_length
                 lexeme = ''
                 continue
-            j -= 1
-        if i < len(F):
+            j -= 1 # decrement j and look at a smaller lexeme
+        if i < len(F): # if we get to j = 0 then i < len(F) which means we have an unexpected character
             write_error('Unexpected character "' + F[i]+ '" at ' + str(i)+'  ...')
         
     return token_array
@@ -321,13 +331,14 @@ elif len(sys.argv) > 2:
     print('Unexpected number of command line arguments ... using the default filename "example.txt"')
 else:
     print('No filename specified in the command line ... using the default filename "example.txt"')
+    print()
 
 
 F, V, C, P, L, Q, E = read_input_file(F, V, C, P, E, L, Q, file_name)
 
 print_grammar(V, C, P, E, L, Q)
 
-# lexical analyzer
+# lexical analysis
 
 if F == '':
     print('no formula given')
@@ -335,12 +346,137 @@ if F == '':
     
 token_array = lexical_analyzer(F, V, C, P, E, L, Q)
 
-# syntax analyzer
-class Tree(object):
+# syntax analysis
+
+class Tree(object): # parse tree data structure
     def __init__(self, data, index):
-        self.data = data
-        self.index = index
-        self.children = []
+        self.data = data # data represents the token
+        self.index = index # index represents the index of the token in the token array / stream
+        self.children = [] # list of child nodes
+
+def Start(parent):
+    global I
+    global lookahead
+    global arity
+    
+    I = 1 # set I to 1 - the first token in the token array
+    lookahead = token_array[I-1] # get the first token at index 0
+    arity = 0 # set the global arity to 0
+    root.children = Formula() # set the child nodes of the 'Start' node to any nodes returned by formula
+    match('EOF') # match EOF to make sure we reached the end when parsing
+    
+def Formula(): # non terminal *Formula*
+    global lookahead
+    nodes = [] # list of nodes returned by Formula()
+    if lookahead[0] == '(': # if we see a '(' we know to use the production rule: *Formula* -> (*Expression*)
+        nodes.append(Tree('(',I)) # append tree node to our list of nodes
+        match('OpenBracket') # match open bracket
+        nodes.append(Expression()) # call Expression() and append any nodes returned to our list of nodes
+        nodes.append(Tree(')',I)) # append tree node to our list of nodes
+        match('CloseBracket') # match close brackets
+        return nodes # return our list of nodes
+    elif lookahead[0] == L[4]: # if we see a negation  we know to use the production rule: *Formula* -> <negation>*Formula*
+        node = Tree(L[4],I) # init negation tree node
+        match('Negation')
+        node.children = (Formula()) # call Formula() and set any nodes returned to the children of our negation node
+        return [node] # return singleton list containing our negation tree node
+    elif lookahead[0] in Q: # if we see a quantifier we know to use the production rule: *Formula* -> *Quantifier* *Variable* *Formula*
+        temp_node1 = Quantifier() # create temp node returned by Quantfiier()
+        temp_node2 = Variable() # create temp node returned by Variable()
+        temp_nodes3 = Formula() # create list of temp nodes return by Formula()
+        temp_node2.children=(temp_nodes3) # set the children of the variable node to the list returned by Formula()
+        temp_node1.children.append(temp_node2) # set the child of the quantifier node to the variable node
+        return [temp_node1] # return a singleton list containing out quantfier node
+    elif lookahead[0] in [p[0] for p in P]: # if we see a predicate we know to use the production rule: *Formula* -> *Predicate*
+        return [Predicate()] # return a singleton list containing the node returned by Predicate()
+    else: # if we see something else for example, a variable or a constant return an error
+        write_error('syntax error ... could not match '+lookahead[0] +' in Formula')
+            
+def Expression(): # non terminal *Expression*
+    global lookahead
+    if lookahead[0] in C or lookahead[0] in V: # if we see a constant or variable we know to use the prodcution rule *Expression* -> *Term*<equality>*Term*
+        node = Tree(E, None) # init a tree node for the equality symbol
+        node.children.append(Term()) # append the node returned by Term() to the equality node's children
+        node.index = I # set the node index of the equality node
+        match('Equality') # match the equality symbol
+        node.children.append(Term()) # append the node returned by Term() to the equality node's children
+        return node # return the equality node
+    else: # if we see anything else we can assume we should try the production rule: *Expression* -> *Formula**Connective**Formula*
+        node = Tree('temp', None) # init a temporary node, that will become the logical connective node
+        node.children+=Formula() # add the nodes returned by Formula() to the children of our temporary node
+        temp = Connective() # set another temporary node to the node returned by Connective()
+        node.data = temp.data # set the node data (which connective?)
+        node.index = temp.index # set the node index
+        node.children+=Formula() # add the nodes returned by Formula() to the children of our connective node
+        return node # return our connective node
+
+def Term(): # non terminal *Term*
+    global lookahead
+    if lookahead[0] in C: # if we see a constant we know to use the production rule: *Term* -> *Constant*
+        return Constant() # return the node returned by Constant()
+    elif lookahead[0] in V: # if we see a variable we know to use the production rule: *Term* -> *Variable*
+        return Variable() # return the node returned by Variable()
+    else: # if we see something else for example a predicate, then error
+        write_error('syntax error ... could not match '+lookahead[0] +' in Term')
+
+def Predicate(): # non terminal *Predicate*
+    global arity
+    node = Tree(lookahead[0],I) # create a Predicate node
+    match('Predicate') # match a predicate token
+    node.children.append(Tree(lookahead[0],I)) # append a '(' node to the children of our predicate node
+    match('OpenBracket') # match open bracket
+    for _ in range(arity): # for the arity of our predicate
+        node.children.append(Variable()) # append a variable node returned by Variable() to the chidlren of our predicate node
+    node.children.append(Tree(lookahead[0],I)) # append a ')' node to the children of our predicate node
+    match('CloseBracket') # match close bracket
+    return node # return our predicate node
+    
+def Quantifier(): # non terminal *Quantifier*
+    node = Tree(lookahead[0],I) # create a quantfiier node
+    match('Quantifier') # match the quantifier
+    return node # return our quantifier node
+
+def Connective(): # non terminal *Connective*
+    node = Tree(lookahead[0],I) # create a logical connective node
+    match('Connective') # match the logical connective
+    return node # return our connective node
+
+def Variable(): # non terminal *Variable*
+    node = Tree(lookahead[0],I) # create a variable node
+    match('Variable') # match the variable
+    return node # return our variable node
+
+def Constant(): # non terminal *Constant*
+    node = Tree(lookahead[0],I) # create a constant node
+    match('Constant') # match the variable
+    return node # return our constant node
+
+def match(token_type): # function that matches the current lookahead token with some token type
+    global lookahead
+    global arity
+    global position_dict
+    if (lookahead[1] == token_type): # lookahead[1] specifies the token type of the current token
+        # if the token type of the current lookahead is the one expected specified in token_type then continue
+        if token_type == 'Predicate': # if the token_type expected is Predicate then set the global arity variable 
+            try:
+                arity = lookahead[2] # lookahead[2] specifies the arity of a predicate if the current lookahead token is a predicate, we have a tuple: (<predicate_name>, <token_type>, <arity>)
+            except: # if we can't get the arity something has gone wrong print error and exit
+                write_error('internal parser error ... could not get arity of predicate '+lookahead[0])
+        next_token() # move the lookahead along to the next token
+    else: # if the expected token_type does not macth the token type of the current lookahead then we have a syntax error
+        write_error('syntax error ... could not match '+lookahead[0] +' to '+token_type)
+        
+def next_token(): # function that sets the global lookahead variable to the next token in our token array / stream
+    global lookahead
+    global I
+    if lookahead[1] != 'EOF': # check our lookahead is not EOF
+        try:
+            I += 1 # increment I to get the next token
+            lookahead = token_array[I-1] # try to get the Ith token at postion I-1 in our array
+        except:
+            # if we get an index out of range error then we must report an error, our parser was expecting more tokens but it reached EOF
+            write_error('syntax error ... parser expected additional tokens ... ')
+
 
 token_array += [('$', 'EOF')] # append EOF / $ to the end of our token stream 
 
@@ -351,172 +487,55 @@ arity = 0 # global arity var for any predictes we come accross
 # initialise the parse tree data structure
 root = Tree('Start', 0)
 
-def Start(parent):
-    global I
-    global lookahead
-    global arity
-    
-    I = 1
-    lookahead = token_array[I-1]
-    arity = 0
-    root.children = Formula()
-    match('EOF')
-    
-def Formula():
-    global lookahead
-    nodes = []
-    if lookahead[0] == '(':
-        nodes.append(Tree('(',I))
-        match('OpenBracket')
-        nodes.append(Expression())
-        nodes.append(Tree(')',I))
-        match('CloseBracket')
-        return nodes
-    elif lookahead[0] == L[4]: # equal to negation
-        node = Tree(L[4],I)
-        match('Negation')
-        node.children = (Formula())
-        return [node]
-    elif lookahead[0] in Q:
-        temp_node1 = Quantifier()
-        temp_node2 = Variable()
-        temp_nodes3 = Formula()
-        temp_node2.children=(temp_nodes3)
-        temp_node1.children.append(temp_node2)
-        return [temp_node1]
-    elif lookahead[0] in [p[0] for p in P]:
-        return [Predicate()]
-    else:
-        write_error('syntax error ... could not match '+lookahead[0] +' in Formula')
-            
-def Expression():
-    global lookahead
-    if lookahead[0] in C or lookahead[0] in V:
-        node = Tree(E, None)
-        node.children.append(Term())
-        node.index = I
-        match('Equality')
-        node.children.append(Term())
-        return node
-    else:
-        node = Tree('temp', None)
-        node.children+=Formula()
-        temp = Connective()
-        node.data = temp.data
-        node.index = temp.index
-        node.children+=Formula()
-        return node
-
-def Term():
-    global lookahead
-    if lookahead[0] in C:
-        node = Constant()
-        return node
-    elif lookahead[0] in V:
-        node = Variable()
-        return node
-    else:
-        write_error('syntax error ... could not match '+lookahead[0] +' in Term')
-
-def Predicate():
-    global arity
-    node = Tree(lookahead[0],I)
-    match('Predicate')
-    node.children.append(Tree(lookahead[0],I))
-    match('OpenBracket')
-    for _ in range(arity):
-        node.children.append(Variable())
-    node.children.append(Tree(lookahead[0],I))
-    match('CloseBracket')
-    return node
-    
-def Quantifier():
-    node = Tree(lookahead[0],I)
-    match('Quantifier')
-    return node
-
-def Connective():
-    node = Tree(lookahead[0],I)
-    match('Connective')
-    return node
-
-def Variable():
-    node = Tree(lookahead[0],I)
-    match('Variable')
-    return node
-
-def Constant():
-    node = Tree(lookahead[0],I)
-    match('Constant')
-    return node
-
-def match(token_type):
-    global lookahead
-    global arity
-    global position_dict
-    if (lookahead[1] == token_type):
-        if token_type == 'Predicate':
-            try:
-                arity = lookahead[2]
-            except:
-                write_error('internal parser error ... could not get arity of predicate '+lookahead[0])
-        next_token()
-    else:
-        write_error('syntax error ... could not match '+lookahead[0] +' to '+token_type)
-        
-def next_token():
-    global lookahead
-    global I
-    if lookahead[1] != 'EOF':
-        try:
-            I += 1
-            lookahead = token_array[I-1]
-        except:
-            write_error('syntax error ... parser expected additional tokens ... ')
-    
+# call the Start() function on the root node and begin parsing
 Start(root)
-# construct and print the parse tree as we go along ...
+
+# constructing and displaying the tree
+
+# set the global variable current_node to our root 'Start' node
 current_node = root
+# init the layout array lay which specifies the relative positions of the parse tree nodes
 lay = [0]*len(token_array)
+# init the Edges array which specifies the edges between the parse tree nodes
 Edges = []
 
-def traverse_tree(node, X, Y, H):
+def traverse_tree(node, X, Y, H): # traverse tree function
     global position
     global Edges
-    lay[node.index] = [X, Y]
-    L = len(node.children)
-    for i in range(0, L):
-        Edges.append((node.index, node.children[i].index))
-        traverse_tree(node.children[i], X + (i+1-((L+1)/2))*(1/H), Y+2.0, H*1.50)
+    lay[node.index] = [X, Y] # X an Y specify the relative position of this node
+    L = len(node.children) # L is the number of children of this node
+    for i in range(0, L): # for each of the child nodes
+        Edges.append((node.index, node.children[i].index)) # create an edge between this node and its children
+        traverse_tree(node.children[i], X + (i+1-((L+1)/2))*(1/H), Y+2.0, H*1.50) # call traverse_tree on each of the child nodes and specify their relative position
 
-def create_tree(lay, E):
+def create_tree(lay, E): # create tree function - create the tree using the layout array lay and the edges array E
     global token_array
-    nr_vertices = len(token_array)
-    v_label = ['Start']+[t[0] for t in token_array][:-1]
-    G = Graph.Tree(nr_vertices, 2)
-    position = {k: lay[k] for k in range(nr_vertices)}
+    nr_vertices = len(token_array) # set nr_vertices to the number of vertices
+    v_label = ['Start']+[t[0] for t in token_array][:-1] # append Start to our node labels and remove the EOF character from our labels
+    G = Graph.Tree(nr_vertices, 2) # create a tree G
+    position = {k: lay[k] for k in range(nr_vertices)} # create the position dict
     Y = [lay[k][1] for k in range(nr_vertices)]
-    M = max(Y)
+    M = max(Y) # M is the max Y position
 
-    L = len(position)
-    Xn = [position[k][0] for k in range(L)]
-    Yn = [2*M-position[k][1] for k in range(L)]
+    L = len(position) # L is the number of nodes again
+    Xn = [position[k][0] for k in range(L)] # create the actual X position from the relative positions in the dict position
+    Yn = [2*M-position[k][1] for k in range(L)] # create the actual Y position from the relative positions in the dict position
     Xe = []
     Ye = []
-    for edge in E:
+    for edge in E: # create the edges using the relative positions
         Xe+=[position[edge[0]][0], position[edge[1]][0], None]
         Ye+=[2*M-position[edge[0]][1], 2*M-position[edge[1]][1], None]
 
-    labels = v_label
+    labels = v_label # set the labels of the nodes
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=Xe,
+    fig = go.Figure() # init a figure
+    fig.add_trace(go.Scatter(x=Xe, # draws lines / edges using arrays Xe and Ye
                              y=Ye,
                              mode='lines',
                              line=dict(color='rgb(210,210,210)', width=1),
                              hoverinfo='none'
-                             )) # draws lines using arrays Xe and Ye
-    fig.add_trace(go.Scatter(x=Xn,
+                             )) 
+    fig.add_trace(go.Scatter(x=Xn, # draws points using arrays Xn and Yn 
                              y=Yn,
                              mode='markers',
                              name='bla',
@@ -528,13 +547,13 @@ def create_tree(lay, E):
                              text=labels,
                              hoverinfo='text',
                              opacity=0.8
-                             )) # draws points using arrays Xn and Yn 
-    axis = dict(showline=False, # hide axis line, grid, ticklabels and  title
+                             )) 
+    axis = dict(showline=False, # hide axis line, grid, ticklabels and title
             zeroline=False,
             showgrid=False,
             showticklabels=False,
-            ) # removes axes
-    fig.update_layout(title='Parse Tree',
+            ) ]
+    fig.update_layout(title='Parse Tree', # update the layout with a title and annotations on the nodes
                       annotations=make_annotations(position, v_label, labels, M, position),
                       font_size=12,
                       showlegend=False,
@@ -543,18 +562,18 @@ def create_tree(lay, E):
                       margin=dict(l=40,r=40,b=85,t=100),
                       hovermode='closest',
                       plot_bgcolor='rgb(248,248,248)'
-                      ) # sets the annotations
-    fig.show()
+                      ) 
+    fig.show() # show the figure
     
 def make_annotations(pos, text, labels, M, position, font_size=10, font_color='rgb(250,250,250)'):
-    L=len(pos)
-    if len(text)!=L:
+    L=len(pos) # function to assign the text / labels to the nodes of the parse tree
+    if len(text)!=L: 
         raise ValueError('The lists pos and text must have the same len')
     annotations = []
-    for k in range(L):
+    for k in range(L): # for each node
         annotations.append(
-            dict(
-                text=labels[k], # or replace labels with a different list for the text within the circle
+            dict( # specify the node characteristics
+                text=labels[k], 
                 x=pos[k][0], y=2*M-position[k][1],
                 xref='x1', yref='y1',
                 font=dict(color=font_color, size=font_size),
@@ -563,12 +582,13 @@ def make_annotations(pos, text, labels, M, position, font_size=10, font_color='r
     return annotations
 
 
-if lookahead[1] != 'EOF':
+if lookahead[1] != 'EOF': # if we have not reached EOF then we have a syntax error ... we have been given too many tokens .. perhaps additional brackets
     write_error('syntax error ... parser given additional tokens ... ')
 else:
-    print('Formula is syntactically correct ... ')
+    print()
+    print('Formula is syntactically correct ... ') # otherwise our formula is correct
     f = open('parser.log', 'a')
-    f.write('Execution at '+str(datetime.now()) +':\n')
+    f.write('Execution at '+str(datetime.now()) +':\n') # write to the .log file
     f.write('The formula was syntactically correct\n')
     f.write('\n')
     f.close()
