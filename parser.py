@@ -597,7 +597,7 @@ def display_tree(lay, E): # display tree function - display the tree with plotly
             zeroline=False,
             showgrid=False,
             showticklabels=False,
-            ) ]
+            )
     fig.update_layout(title='Parse Tree', # update the layout with a title and annotations on the nodes
                       annotations=make_annotations(position, v_label, labels, M, position),
                       font_size=12,
