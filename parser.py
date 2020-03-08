@@ -31,7 +31,6 @@ def write_error(error): # print error and write to the log file
     print()
     print(error)
     f = open('parser.log', 'a+')
-    f.write('Execution at '+str(datetime.now()) +':\n')
     f.write(error+'\n')
     f.write('\n')
     f.close()
@@ -372,8 +371,20 @@ else:
     print('using the default <filename> "example.txt" ...')
     print()
 
+# write the execution timestamp header to the log file    
+f = open('parser.log', 'a+')
+f.write('Execution at '+str(datetime.now()) +':\n')
+f.close()
+    
 # try to read input file
 F, V, C, P, L, Q, E = read_input_file(F, V, C, P, E, L, Q, file_name)
+
+# write that the input file passed the validation checks
+print('Success - the input file has the correct format ...')
+print()
+f = open('parser.log', 'a+')
+f.write('Success - the input file given had the correct format ...\n')
+f.close()
 
 # print the grammar
 print_grammar(V, C, P, E, L, Q)
@@ -677,11 +688,10 @@ else:
     print()
     print('Success - the formula is syntactically correct ... ') # otherwise our formula is correct
     f = open('parser.log', 'a')
-    f.write('Execution at '+str(datetime.now()) +':\n') # write to the .log file
     f.write('Success - the formula was syntactically correct ... \n')
     f.write('\n')
     f.close()
-    print('Displaying parse tree ... ')
+    print('Displaying the parse tree ... ')
     traverse_tree(root, 0.0, -10.0, 1.0) # traverse the tree starting from the root
     display_tree(lay, Edges) # display the tree
     sys.exit()
