@@ -5,6 +5,7 @@ import igraph
 from igraph import Graph, EdgeSeq
 import plotly.graph_objects as go
 import math
+
 #################################################################
 # Python script information
 #################################################################
@@ -29,9 +30,9 @@ import math
 def write_error(error): # print error and write to the log file
     print()
     print(error)
-    f = open('parser.log', 'a')
+    f = open('parser.log', 'a+')
     f.write('Execution at '+str(datetime.now()) +':\n')
-    f.write('error occured - '+error+'\n')
+    f.write(error+'\n')
     f.write('\n')
     f.close()
     sys.exit()
@@ -39,60 +40,76 @@ def write_error(error): # print error and write to the log file
 def read_input_file(F, V, C, P, E, L, Q, file_name): # read the input file
     name_re = re.compile('[a-zA-Z0-9_]') # regular expression for checking variable, predicate and constants
     other_re = re.compile('[a-zA-Z0-9_\\\\]') # regular expression for conenctives and quantifiers
-    equality_re = re.compile('[a-zA-A0-9_\\\\=]') # regular expression for the equality symbol
+    equality_re = re.compile('[a-zA-Z0-9_\\\\=]') # regular expression for the equality symbol
     FILE = None
     formula_flag = False # flag indictating if we are expecting part of the formula no the next line
     try:
         FILE = open(file_name)
     except:
-        print('could not open the specified input file ...') # throw error and exit if the file doesn't exist
-        sys.exit()
+        write_error('Execution error - could not open the specified input file ...') # throw error and exit if the file doesn't exist
     for line in FILE: 
         lst = line.rstrip().split(' ')
         if lst[0] == 'variables:':
+            if V:
+                write_error('Input file error - the set of variables has been specified multiple times ...')
             V = lst[1:]
             for v in V:
                 if not bool(re.match(name_re, v)): # check variable names against regular expression
-                    write_error('variable name contains illegal characters ...')
+                    write_error('Input file error - the name of a variable contains illegal characters ...')
         elif lst[0] == 'constants:':
+            if C:
+                write_error('Input file error - the set of constants has been specified multiple times ...')
             C = lst[1:]
             for c in C:
                 if not bool(re.match(name_re, c)): # check constant names against regular expression
-                    write_error('constant name contains illegal characters ...')
+                    write_error('Input file error - the name of a constant contains illegal characters ...')
         elif lst[0] == 'predicates:':
+            if P:
+                write_error('Input file error - the set of predicates has been specified multiple times ...')
             for i in range(1, len(lst)):
                 try: # append tuple (<predicate_name>, <arity>) to P
-                    P.append((lst[i][:-3], int(lst[i][lst[i].index('[')+1:lst[i].index(']')])))
-                except:
-                    write_error('error in input file - predicate given a non integer arity ...')
+                    local_arity = int(lst[i][lst[i].index('[')+1:lst[i].index(']')])
+                    if local_arity < 1:
+                        write_error('Input file error - a predicate has been given an arity less than 1 ...')
+                    P.append((lst[i][:-3], local_arity))
+                except IndexError:
+                    write_error('Input file error - a predicate has been given a non integer arity ...')
                     
             for p in P:
                 if not bool(re.match(name_re, p[0])): # check predicate names against regular expression
-                    write_error('predicate name contains illegal characters ..')
+                    write_error('Input file error - the name of a predicate name contains illegal characters ...')
         elif lst[0] == 'equality:':
+            if E:
+                write_error('Input file error - the equality symbol has been specified multiple times ...')
             try:
                 E = lst[1]
                 if not bool(re.match(equality_re, E)): # check equality symbol against regular expression
-                    write_error('equality symbol name contains illegal characters ...')
-            except: # check equality symbol given
-                write_error('no equality symbol given ...')
+                    write_error('Input file error - the name of the equality symbol contains illegal characters ...')
+            except IndexError: # check equality symbol given
+                write_error('Input file error - there is no equality symbol ...')
         elif lst[0] == 'connectives:':
+            if L:
+                write_error('Input file error - the set of logical connectives has been specified multiple times ...')
             try:
                 L = lst[1:6]
                 for l in L:
                     if not bool(re.match(other_re, l)): # check connectives against regular expression
-                        write_error('connective contains illegal characters ...')
-            except: # check all logical connectives are given
-                write_error('some connectives missing in the input file ..')
+                        write_error('Input file error - one of the logical connectives contains illegal characters ...')
+            except IndexError: # check all logical connectives are given
+                write_error('Input file error - some logical connectives have not been specified ..')
         elif lst[0] == 'quantifiers:':
+            if Q:
+                write_error('Input file error - the set of quantifiers has been specified multiple times ...')
             try:
                 Q = lst[1:3]
                 for q in Q:
                     if not bool(re.match(other_re, q)): # check quantifiers against regular expression
-                        write_error('quantifier contains illegal characters ...')
-            except: # check all quantifiers are given
-                write_error('some quantifiers missing in the input file ...')
+                        write_error('Input file error - one of the quantifiers contains illegal characters ...')
+            except IndexError: # check all quantifiers are given
+                write_error('Input file error - some of the quantifiers have not been specified ...')
         elif lst[0] == 'formula:':
+            if F:
+                write_error('Input file error - the formula has been specified multiple times ...')
             F = ''.join(lst[1:])
             formula_flag = True
             continue
@@ -100,7 +117,7 @@ def read_input_file(F, V, C, P, E, L, Q, file_name): # read the input file
             F += ''.join(lst)
             continue
         else: # if no formula flag throw error - we are not expecting this line ...
-            write_error('unexcpected line in the input file ... '+line+' ...')
+            write_error('Input file error - there is an unexpected line in the input file: '+line+' ...')
             
         formula_flag = False
             
@@ -108,61 +125,60 @@ def read_input_file(F, V, C, P, E, L, Q, file_name): # read the input file
     
     # Handle various input file errors
     if not E:
-        write_error('no equality symbol given ...')
+        write_error('Input file error - there is no equality symbol ...')
 
     if len(L) != 5:
-        write_error('incorrect number of connectives in the input file ...')
+        write_error('Input file error - there is an incorrect number of connectives specified ...')
 
     if len(Q) != 2:
-        write_error('incorrect number of quantifiers in the input file ...')
+        write_error('Input file error - there is an incorrect number of quantifiers specified ...')
 
     if set(V).intersection(set(C)):
-        write_error('some variables and constants given the same name ...')
+        write_error('Input file error - some of the variables and constants have been given the same name ...')
 
     if set(V).intersection(set(L)):
-        write_error('some variables and connectives given the same name ...')
+        write_error('Input file error - some of the variables and logical connectives have been given the same name ...')
 
     if set(C).intersection(set(L)):
-        write_error('some constants and connectives given the same name ...')
+        write_error('Input file error - some of the constants and logical connectives have been given the same name ...')
 
     if set(V).intersection(set(Q)):
-        write_error('some variables and quantifiers given the same name ...')
+        write_error('Input file error - some of the variables and quantifiers have been given the same name ...')
 
     if set(C).intersection(set(Q)):
-        write_error('some constants and quantifiers given the same name ...')
+        write_error('Input file error - some of the constants and quantifiers have been given the same name ...')
 
     if set(L).intersection(set(Q)):
-        write_error('some connectives and quantifiers given the same name ...')
+        write_error('Input file error - some of the quantifiers and logical connectives have been given the same name ...')
 
     if len(set(C)) != len(C):
-        write_error('duplicated constant names in the input file ...')
+        write_error('Input file error - there are duplicated constant names in the input file ...')
 
     if len(set(V)) != len(V):
-        write_error('duplicated variable names in the input file ...')
+        write_error('Input file error - there are variable constant names in the input file ...')
 
     if len(set([p[0] for p in P])) != len([p[0] for p in P]):
-        write_error('duplicated predicate names in the input file ...')
+        write_error('Input file error - there are duplicated predicate names in the input file ...')
 
     if len(set(L)) != len(L):
-        write_error('duplicated connective names in the input file ...')
+        write_error('Input file error - there are duplicated logical connectives identifiers in the input file ...')
 
     if len(set(Q)) != len(Q):
-        write_error('duplicated quantifier names in the input file ...')
+        write_error('Input file error - there are duplicated quantifier indentifiers in the input file ...')
 
-    if E in V or E in C or E in Q or E in L:
-        write_error('equality symbol given the same name somewhere else ...')
+    if E in V or E in C or E in Q or E in L or E in [p[0] for p in P]:
+        write_error('Input file error - the equality symbol identifier appears elsewhere in the input file ...')
         
     for p in P:
         if p[0] in V:
-            write_error('some variables and predicates given the same name ...')
+            write_error('Input file error - some of the variables and predicates have been given the same name ...')
         if p[0] in C:
-            write_error('some constants and predicates given the same name ...')
+            write_error('Input file error - some of the constants and predicates have been given the same name ...')
         if p[0] in L:
-            write_error('some connectives and predicates given the same name ...')
+            write_error('Input file error - some of the logical connectives and predicates have been given the same name ...')
         if p[0] in Q:
-            write_error('some quantifiers and predicates given the same name ...')
-        if p[0] == E:
-            write_error('equality symbol and predicate given the same name ...')
+            write_error('Input file error - some of the quantifiers and predicates have been given the same name ...')
+
     return F, V, C, P, L, Q, E
     
 def print_grammar(V, C, P, E, L, Q):
@@ -264,7 +280,7 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 continue
             if lexeme == ')':
                 if arity > 0:
-                    write_error('Predicate given too few variables ...')
+                    write_error('Syntax error - a predicate has been given too few variables ...')
                 token_array.append((lexeme, 'CloseBracket'))
                 i += len(lexeme)
                 j = max_length
@@ -274,7 +290,7 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 if arity > 0: # if we see a comma make sure it is part of a predicate
                     arity -= 1
                 else:
-                    write_error('Unexpected character ","  - Predicate could have been given too many variables ...')
+                    write_error('Syntax error - there is an unexpected character "," at position '+str(i)+' in the formula\n- perhaps a predicate has been given too many variables ...')
                 i += len(lexeme)
                 j = max_length
                 lexeme = ''
@@ -323,7 +339,7 @@ def lexical_analyzer(F, V, C, P, E, L, Q):
                 continue
             j -= 1 # decrement j and look at a smaller lexeme
         if i < len(F): # if we get to j = 0 then i < len(F) which means we have an unexpected character
-            write_error('Unexpected character "' + F[i]+ '" at ' + str(i)+'  ...')
+            write_error('Syntax error - there is an unexpected character "' + F[i]+ '" at position ' + str(i)+'  in the formula ...')
         
     return token_array
 
@@ -350,9 +366,10 @@ file_name = 'example.txt'
 if len(sys.argv) == 2:
     file_name = sys.argv[1]
 elif len(sys.argv) > 2:
-    print('Unexpected number of command line arguments ... using the default filename "example.txt"')
+    write_error('Execution error - there are an unexpected number of command line arguments ... ')
 else:
-    print('No filename specified in the command line ... using the default filename "example.txt"')
+    print('WARNING - there was no <filename> specified in the command line ...')
+    print('using the default <filename> "example.txt" ...')
     print()
 
 # try to read input file
@@ -367,7 +384,11 @@ print_grammar(V, C, P, E, L, Q)
 
 # if we dont' have a formula print error and exit
 if F == '':
-    write_error('no formula given ...')
+    write_error('Execution error - there was no formula specified in the input file ...')
+else: # remove all white space that includes tabs \t and newlines \n
+    F = F.replace('\t', '')
+    F = F.replace(' ', '')
+    F = F.replace('\n', '')
 
 # get the token stream from our lexical analyzer 
 token_array = lexical_analyzer(F, V, C, P, E, L, Q)
@@ -425,8 +446,14 @@ def Formula(): # non terminal *Formula*
     elif lookahead[0] in [p[0] for p in P]: # if we see a predicate we know to use the production rule: *Formula* -> *Predicate*
         return [Predicate()] # return a singleton list containing the node returned by Predicate()
     else: # if we see something else for example, a variable or a constant return an error
-        write_error('syntax error ... could not match '+lookahead[0] +' in Formula')
-            
+        error = 'Syntax error - the syntax parser expected either a "(", a negation, a quantifier or a predicate but was given a '+lookahead[1] +' '+lookahead[0]+' instead'
+        # construct a meaningful error message
+        if lookahead[1] == 'Equality':
+            error += '\n- perhaps an equality symbol appeared before a variable or constant'
+        if lookahead[1] == 'Connective':
+            error += '\n- perhaps a logical connective appeared before a valid formula'
+        write_error(error+' ...')
+        
 def Expression(): # non terminal *Expression*
     global lookahead
     if lookahead[0] in C or lookahead[0] in V: # if we see a constant or variable we know to use the prodcution rule *Expression* -> *Term*<equality>*Term*
@@ -452,7 +479,7 @@ def Term(): # non terminal *Term*
     elif lookahead[0] in V: # if we see a variable we know to use the production rule: *Term* -> *Variable*
         return Variable() # return the node returned by Variable()
     else: # if we see something else for example a predicate, then error
-        write_error('syntax error ... could not match '+lookahead[0] +' in Term')
+        write_error('Syntax error - the syntax parser expected a constant or variable after an equality symbol but got a '+lookahead[1] +' '+ lookahead[0]+' instead ...')
 
 def Predicate(): # non terminal *Predicate*
     global arity
@@ -495,11 +522,25 @@ def match(token_type): # function that matches the current lookahead token with 
         if token_type == 'Predicate': # if the token_type expected is Predicate then set the global arity variable 
             try:
                 arity = lookahead[2] # lookahead[2] specifies the arity of a predicate if the current lookahead token is a predicate, we have a tuple: (<predicate_name>, <token_type>, <arity>)
-            except: # if we can't get the arity something has gone wrong print error and exit
-                write_error('internal parser error ... could not get arity of predicate '+lookahead[0])
+            except IndexError: # if we can't get the arity something has gone wrong print error and exit
+                write_error('Internal error - the syntax parser could not get the arity of the predicate '+lookahead[0]+' ...')
         next_token() # move the lookahead along to the next token
     else: # if the expected token_type does not macth the token type of the current lookahead then we have a syntax error
-        write_error('syntax error ... could not match '+lookahead[0] +' to '+token_type)
+        error = 'Syntax error - the syntax parser expected a '+token_type +' but was given a '+lookahead[1]+' '+lookahead[0]+' instead'
+        # construct a meaningful error message
+        if token_type == 'OpenBracket':
+            error += '\n- perhaps you are missing brackets when expressing a predicate'
+        if token_type == 'CloseBracket':
+            error += '\n- perhaps you are missing brackets somewhere'
+        if token_type == 'Variable':
+            error += '\n- perhaps a quantifier was not given a variable ; perhaps a predicate was given something other than a variable as an input'
+        if token_type == 'Equality':
+            error += '\n- perhaps a variable or constant was not followed by an equality symbol'
+        if token_type == 'Connective':
+            error += '\n- perhaps you have unnessecary brackets'
+        if token_type == 'EOF':
+            error += '\n- perhaps you are missing brackets'
+        write_error(error+' ...' )
         
 def next_token(): # function that sets the global lookahead variable to the next token in our token array / stream
     global lookahead
@@ -508,9 +549,9 @@ def next_token(): # function that sets the global lookahead variable to the next
         try:
             I += 1 # increment I to get the next token
             lookahead = token_array[I-1] # try to get the Ith token at postion I-1 in our array
-        except:
+        except IndexError:
             # if we get an index out of range error then we must report an error, our parser was expecting more tokens but it reached EOF
-            write_error('syntax error ... parser expected additional tokens ... ')
+            write_error('Syntax error - the syntax parser \n- perhaps there are missing brackets somewhere ... ')
 
 #################################################################
 # Main code
@@ -551,7 +592,7 @@ def traverse_tree(node, X, Y, H): # traverse tree function
     L = len(node.children) # L is the number of children of this node
     for i in range(0, L): # for each of the child nodes
         Edges.append((node.index, node.children[i].index)) # create an edge between this node and its children
-        traverse_tree(node.children[i], X + (i+1-((L+1)/2))*(1/H), Y+2.0, H*1.50) # call traverse_tree on each of the child nodes and specify their relative position
+        traverse_tree(node.children[i], X + (i+1-((L+1)/2))*(1/((math.log(L) + 1)*H)), Y+2.0, H*(math.log(L) + 1)) # call traverse_tree on each of the child nodes and specify their relative position
 
 def display_tree(lay, E): # display tree function - display the tree with plotly and igraph using the layout array lay and the edges array E
     global token_array
@@ -612,8 +653,8 @@ def display_tree(lay, E): # display tree function - display the tree with plotly
     
 def make_annotations(pos, text, labels, M, position, font_size=10, font_color='rgb(250,250,250)'):
     L=len(pos) # function to assign the text / labels to the nodes of the parse tree
-    if len(text)!=L: 
-        raise ValueError('The lists pos and text must have the same len')
+    if len(text)!=L:
+        write_error('Internal error - while constructing the parse tree the lists pos and text must have the same len ...')
     annotations = []
     for k in range(L): # for each node
         annotations.append(
@@ -631,17 +672,17 @@ def make_annotations(pos, text, labels, M, position, font_size=10, font_color='r
 #################################################################
 
 if lookahead[1] != 'EOF': # if we have not reached EOF then we have a syntax error ... we have been given too many tokens .. perhaps additional brackets
-    write_error('syntax error ... parser given additional tokens ... ')
+    write_error('Syntax error - the syntax parser was given additional unexpected tokens \n-perhaps there are unnecessary brackets ... ')
 else:
     print()
-    print('Formula is syntactically correct ... ') # otherwise our formula is correct
+    print('Success - the formula is syntactically correct ... ') # otherwise our formula is correct
     f = open('parser.log', 'a')
     f.write('Execution at '+str(datetime.now()) +':\n') # write to the .log file
-    f.write('The formula was syntactically correct\n')
+    f.write('Success - the formula was syntactically correct ... \n')
     f.write('\n')
     f.close()
     print('Displaying parse tree ... ')
-    traverse_tree(root, 0.0, -10.0, 0.25) # traverse the tree starting from the root
+    traverse_tree(root, 0.0, -10.0, 1.0) # traverse the tree starting from the root
     display_tree(lay, Edges) # display the tree
     sys.exit()
 
