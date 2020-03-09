@@ -687,7 +687,7 @@ if lookahead[1] != 'EOF': # if we have not reached EOF then we have a syntax err
 else:
     print()
     print('Success - the formula is syntactically correct ... ') # otherwise our formula is correct
-    f = open('parser.log', 'a')
+    f = open('parser.log', 'a+')
     f.write('Success - the formula was syntactically correct ... \n')
     f.write('\n')
     f.close()
