@@ -15,6 +15,13 @@ import math
 # -> to install igraph and plotly use the following commands:
 # pip install python-igraph
 # pip install plotly
+# refer to these links if you have trouble installing the required packages:
+# https://plot.ly/python/getting-started/
+# https://plot.ly/python/tree-plots/
+# note: You may need jupyter notebook support, intall it using the following commands:  
+#pip install "notebook>=5.3" "ipywidgets>=7.2"  
+#pip install jupyterlab==1.2 "ipywidgets>=7.5" (for python 3.5+)
+# -> If using mira remember to use pip3.
 # note: the parse tree will be displayed in your default browser ...
 #       make sure python can open your default brower / has permission to do so ...
 #       if possible you can open your defualt browser in anticipation, to make the parse tree display quicker.
@@ -73,7 +80,8 @@ def read_input_file(F, V, C, P, E, L, Q, file_name): # read the input file
                     P.append((lst[i][:-3], local_arity))
                 except IndexError:
                     write_error('Input file error - a predicate has been given a non integer arity ...')
-                    
+                except ValueError:
+                    write_error('Input file error - a predicate has not been given an arity ...')
             for p in P:
                 if not bool(re.match(name_re, p[0])): # check predicate names against regular expression
                     write_error('Input file error - the name of a predicate name contains illegal characters ...')
@@ -181,6 +189,7 @@ def read_input_file(F, V, C, P, E, L, Q, file_name): # read the input file
     return F, V, C, P, L, Q, E
     
 def print_grammar(V, C, P, E, L, Q):
+    f = open('grammar.txt', 'w+')
     # get the logical connectives and quantifiers
     eq = E
     land = L[0]
@@ -193,24 +202,32 @@ def print_grammar(V, C, P, E, L, Q):
     forall = Q[1]
 
     print('note: all non-terminals are enclosed by * characters like so: *<non-terminal>* ')
+    f.write('note: all non-terminals are enclosed by * characters like so: *<non-terminal>* \n')
     print()
+    f.write('\n')
     # start rule
     print('*Start* -> *Formula*')
+    f.write('*Start* -> *Formula*\n')
 
     # logical formulae rules
     print('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier* *Variable* *Formula* | *Predicate*')
+    f.write('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier* *Variable* *Formula* | *Predicate*\n')
 
     # quantifiers
     print('*Quantifier* -> '+ exists + ' | '+ forall)
+    f.write('*Quantifier* -> '+ exists + ' | '+ forall+'\n')
 
     # expression rules
     print('*Expression* -> *Term*'+eq+'*Term* | *Formula**Connective**Formula*')
+    f.write('*Expression* -> *Term*'+eq+'*Term* | *Formula**Connective**Formula*\n')
     
     # term rules
     print('*Term* -> *Constant* | *Variable*')
+    f.write('*Term* -> *Constant* | *Variable*\n')
 
     # connectives rule
     print('*Connective* -> '+land+' | '+lor+' | '+implies+' | '+iff)
+    f.write('*Connective* -> '+land+' | '+lor+' | '+implies+' | '+iff+'\n')
     
     # assign variables to predicate rule
     predicates = ''
@@ -221,6 +238,7 @@ def print_grammar(V, C, P, E, L, Q):
         
     predicates = predicates[:-3]
     print('*Predicate* -> '+predicates)
+    f.write('*Predicate* -> '+predicates+'\n')
 
     # assign variable rule
     variables = ''
@@ -229,6 +247,7 @@ def print_grammar(V, C, P, E, L, Q):
 
     variables = variables[:-3]
     print('*Variable* -> '+ variables)
+    f.write('*Variable* -> '+ variables+'\n')
 
     # assign constants rule
     constants = ''
@@ -237,6 +256,8 @@ def print_grammar(V, C, P, E, L, Q):
 
     constants = constants[:-3]
     print('*Constant* -> '+ constants)
+    f.write('*Constant* -> '+ constants+'\n')
+    f.close()
 
 def lexical_analyzer(F, V, C, P, E, L, Q):
     max_length = 0 # maximum length of a valid lexeme
@@ -421,16 +442,10 @@ class Tree(object):
 # Non terminal function definitions
 #################################################################
     
-def Start(parent):
-    global I
-    global lookahead
-    global arity
-    
-    I = 1 # set I to 1 - the first token in the token array
-    lookahead = token_array[I-1] # get the first token at index 0
-    arity = 0 # set the global arity to 0
-    root.children = Formula() # set the child nodes of the 'Start' node to any nodes returned by formula
+def Start():
+    node = Formula()[0] # set the child nodes of the 'Start' node to any nodes returned by formula
     match('EOF') # match EOF to make sure we reached the end when parsing
+    return node
     
 def Formula(): # non terminal *Formula*
     global lookahead
@@ -559,7 +574,7 @@ def next_token(): # function that sets the global lookahead variable to the next
     if lookahead[1] != 'EOF': # check our lookahead is not EOF
         try:
             I += 1 # increment I to get the next token
-            lookahead = token_array[I-1] # try to get the Ith token at postion I-1 in our array
+            lookahead = token_array[I] # try to get the Ith token at postion I-1 in our array
         except IndexError:
             # if we get an index out of range error then we must report an error, our parser was expecting more tokens but it reached EOF
             write_error('Syntax error - the syntax parser \n- perhaps there are missing brackets somewhere ... ')
@@ -571,15 +586,12 @@ def next_token(): # function that sets the global lookahead variable to the next
 token_array += [('$', 'EOF')] # append EOF / $ to the end of our token stream 
 
 # init the global variabes for syntax analysis
-I = 1 # set I to 1 the first character
-lookahead = token_array[I-1] # set the lookahead to the first character at position I - 1
+I = 0 # set I to 0
+lookahead = token_array[I] # set the lookahead to the first character at position I
 arity = 0 # global arity variable for any predictes we come accross
 
-# initialise the parse tree data structure
-root = Tree('Start', 0)
-
 # call the Start() function on the root node and begin parsing
-Start(root)
+root = Start()
 
 #################################################################
 # Constructing and displaying the parse tree
@@ -599,6 +611,7 @@ Edges = []
 def traverse_tree(node, X, Y, H): # traverse tree function
     global position
     global Edges
+
     lay[node.index] = [X, Y] # X an Y specify the relative position of this node
     L = len(node.children) # L is the number of children of this node
     for i in range(0, L): # for each of the child nodes
@@ -607,8 +620,8 @@ def traverse_tree(node, X, Y, H): # traverse tree function
 
 def display_tree(lay, E): # display tree function - display the tree with plotly and igraph using the layout array lay and the edges array E
     global token_array
-    nr_vertices = len(token_array) # set nr_vertices to the number of vertices
-    v_label = ['Start']+[t[0] for t in token_array][:-1] # append Start to our node labels and remove the EOF character from our labels
+    nr_vertices = len(token_array) - 1 # set nr_vertices to the number of vertices
+    v_label = [t[0] for t in token_array][:-1] # append Start to our node labels and remove the EOF character from our labels
     G = Graph.Tree(nr_vertices, 2) # create a tree G
     position = {k: lay[k] for k in range(nr_vertices)} # create the position dict
     Y = [lay[k][1] for k in range(nr_vertices)]

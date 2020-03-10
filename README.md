@@ -4,6 +4,13 @@
 - To install igraph and plotly use the following commands:  
 **pip install python-igraph**,  
 **pip install plotly**.  
+- refer to the following links if you have trouble installing the required graphing packages:  
+https://plot.ly/python/getting-started/  
+https://plot.ly/python/tree-plots/
+- **note:** You may need jupyter notebook support, intall it using the following commands:  
+**pip install "notebook>=5.3" "ipywidgets>=7.2"**  
+**pip install jupyterlab==1.2 "ipywidgets>=7.5"** (for python 3.5+)
+- If using mira remember to use **pip3**.
 - **note:** the parse tree will be displayed in your default browser, make sure python can open your default brower / has permission to do so, if possible you can open your defualt browser in anticipation, to make the parse tree display quicker.  
 - to run this script from the command line use the following commands:  
 **python parser.py <input_file>** (on windows),  
@@ -14,6 +21,7 @@
 
 # the grammar
 - The grammar will be printed to your screen if the input file passes all the validation checks.
+- The grammar will also be written to the 'grammar.txt' file (bear in mind this file is overwritten with each execution).
 - In the case that a validation check is not passed, an error will be printed to the command line indicating which check failed (this will also be written to parser.log).
 - You need not specify a valid formula (or any formula) for the grammar to be displayed, but if there are duplicated or unexpected lines in the input file an error will be reported.
 - **note:** all non-terminals are enclosed by * characters like so: *non-terminal*, to provide clarity when differentiating between non-terminals and terminals.
