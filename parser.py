@@ -2,7 +2,7 @@ import sys
 import re
 from datetime import datetime
 import igraph
-from igraph import Graph, EdgeSeq
+from igraph import Graph
 import plotly.graph_objects as go
 import math
 
