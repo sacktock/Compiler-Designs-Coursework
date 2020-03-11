@@ -1,5 +1,5 @@
 # parser.py
-- This python script is written with python version 3.6.3.
+- This python script is written with python version 3.6.3 on windows.
 - This python script requires the modules, sys, re, datetime, igraph, plotly, and math.
 - To install igraph and plotly use the following commands:  
 **pip install python-igraph**,  
@@ -8,9 +8,9 @@
 https://plot.ly/python/getting-started/  
 https://plot.ly/python/tree-plots/
 - **note:** You may need jupyter notebook support, intall it using the following commands:  
-**pip install "notebook>=5.3" "ipywidgets>=7.2"**  
+**pip install "notebook>=5.3" "ipywidgets>=7.2"** (this is most likely nessecary)  
 **pip install jupyterlab==1.2 "ipywidgets>=7.5"** (for python 3.5+)
-- If using mira remember to use **pip3**.
+- If using mira remember to use **pip3** and **python3**.
 - **note:** the parse tree will be displayed in your default browser, make sure python can open your default brower / has permission to do so, if possible you can open your defualt browser in anticipation, to make the parse tree display quicker.  
 - to run this script from the command line use the following commands:  
 **python parser.py <input_file>** (on windows),  
@@ -36,6 +36,7 @@ https://plot.ly/python/tree-plots/
 - Brackets '(' or ')' have no children and are always leaves in the parse tree.
 - Constants are also always leaves.
 - Predicates always have the children '(', followed by 'a' variables (where 'a' is the arity of the predicate), and a ')'.
+- **note:** commas ',' are removed during the lexical analysis so won't show up anywhere in the syntax tree.
 - The equality symbol will always have exactly two children - both either a constant or a variable.
 
 # additional info
