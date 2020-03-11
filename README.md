@@ -19,6 +19,11 @@ https://plot.ly/python/tree-plots/
 - If you give more than one command line argument the script will report an error and terminate.
 - Similarly if the file you specify in the command line does not exist then the script will report an error and terminate.
 
+# the formula
+- When the formula is read all whitespace is removed to form one long string and then the tokens are deduced by scanning through the string.
+- Therefore you may specify a formula with any amount of whitespace inbetween valid tokens (this includes none at all):
+- so, (x=y) is valid, existsx(P(x,y)) is valid, and so on...
+
 # the grammar
 - The grammar will be printed to your screen if the input file passes all the validation checks.
 - The grammar will also be written to the 'grammar.txt' file (bear in mind this file is overwritten with each execution).
