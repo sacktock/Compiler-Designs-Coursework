@@ -1,3 +1,4 @@
+# all import statements
 import sys
 import re
 from datetime import datetime
@@ -417,10 +418,11 @@ print_grammar(V, C, P, E, L, Q)
 # if we dont' have a formula print error and exit
 if F == '':
     write_error('Execution error - there was no formula specified in the input file ...')
-else: # remove all white space that includes tabs \t and newlines \n
+else: # remove all white space that includes tabs \t and newlines \n and character returns \r
     F = F.replace('\t', '')
     F = F.replace(' ', '')
     F = F.replace('\n', '')
+    F = F.replace('\r', '')
 
 # get the token stream from our lexical analyzer 
 token_array = lexical_analyzer(F, V, C, P, E, L, Q)
