@@ -1,7 +1,7 @@
 note: all non-terminals are enclosed by * characters like so: *<non-terminal>* 
 
 *Start* -> *Formula*
-*Formula* -> (*Expression*) | \neg*Formula* | *Quantifier* *Variable* *Formula* | *Predicate*
+*Formula* -> (*Expression*) | \neg*Formula* | *Quantifier**Variable**Formula* | *Predicate*
 *Quantifier* -> \exists | \forall
 *Expression* -> *Term*=*Term* | *Formula**Connective**Formula*
 *Term* -> *Constant* | *Variable*

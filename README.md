@@ -23,7 +23,7 @@ https://plot.ly/python/tree-plots/
 # the formula
 - When the formula is read all whitespace is removed to form one long string and then the tokens are deduced by scanning through the string.
 - Therefore you may specify a formula with any amount of whitespace inbetween valid tokens (this includes none at all):
-- so, (x=y) is valid, existsx(P(x,y)) is valid, and so on...
+- so, (x=y) is valid, existsxP(x,y) is valid, and so on...
 
 # the grammar
 - The grammar will be printed to your screen if the input file passes all the validation checks.
@@ -52,4 +52,4 @@ https://plot.ly/python/tree-plots/
 - In the case of complex or large FO formula, the tree may be hard to read, but there is a zoom function provided by plotly so you can zoom in on some of the nodes to check they are indeed correct.
 - In the case of particularly long names for variables, constants, predicates etc. hover over the node to read the full name of terminal it represents.
 - In the case that plotly times out or fails to display the parse tree, run the script again on the same input and it should work (it has happened quite a lot of times where it randomly fails to display the parse tree).
-- There are some example executions in the parser.log and an example grammar in the grammar.txt file, so you can see their formats.
+- There are some example executions in the parser.log and an example grammar (created from example.txt) in the grammar.txt file, so you can see their formats.

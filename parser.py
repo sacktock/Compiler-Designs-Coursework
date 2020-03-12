@@ -211,8 +211,8 @@ def print_grammar(V, C, P, E, L, Q):
     f.write('*Start* -> *Formula*\n')
 
     # logical formulae rules
-    print('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier* *Variable* *Formula* | *Predicate*')
-    f.write('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier* *Variable* *Formula* | *Predicate*\n')
+    print('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier**Variable**Formula* | *Predicate*')
+    f.write('*Formula* -> (*Expression*) | '+neg+'*Formula* | *Quantifier**Variable**Formula* | *Predicate*\n')
 
     # quantifiers
     print('*Quantifier* -> '+ exists + ' | '+ forall)
